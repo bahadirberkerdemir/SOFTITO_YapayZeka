@@ -102,5 +102,44 @@ JOIN kitaplar k
 ON k.id = o.kitap_id
 );
 
-SELECT * FROM odunc
-WHERE gun > avg(gun) -- ALT SORGUNUN SONU
+SELECT * 
+FROM odunc 
+WHERE gun > (SELECT AVG(gun) FROM odunc);
+
+SELECT uye_id, kitap_id, gun,
+    CASE 
+        WHEN gun > 30 THEN 'Gecikmiş'
+        WHEN gun BETWEEN 15 AND 30 THEN 'Uyarı'
+        ELSE 'Normal'
+    END AS durum
+FROM odunc;
+
+SELECT id, ad, yas,
+    CASE 
+        WHEN yas <= 18 THEN 'Genç'
+        ELSE 'Yetişkin'
+    END AS yas_grubu
+FROM uyeler;
+
+SELECT 
+    CASE 
+        WHEN gun > 30 THEN 'Gecikmiş'
+        WHEN gun BETWEEN 15 AND 30 THEN 'Uyarı'
+        ELSE 'Normal'
+    END AS durum,
+    COUNT(*) AS kayit_sayisi
+FROM odunc
+GROUP BY 
+    CASE 
+        WHEN gun > 30 THEN 'Gecikmiş'
+        WHEN gun BETWEEN 15 AND 30 THEN 'Uyarı'
+        ELSE 'Normal'
+    END;
+	
+CREATE INDEX idx_uyeler_ad ON uyeler(ad);
+
+ALTER TABLE uyeler ADD COLUMN eposta TEXT;
+
+CREATE UNIQUE INDEX idx_uyeler_eposta ON uyeler(eposta);
+
+--Aynı mail iki kişiye atanmaya çalışırsa Unique Constraint failed hatası alınır
